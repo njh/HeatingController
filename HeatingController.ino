@@ -14,7 +14,6 @@
 #include <Arduino.h>
 #include <avr/wdt.h>
 
-#include <EtherSia.h>
 #include <TimerOne.h>
 
 
