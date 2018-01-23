@@ -1,5 +1,5 @@
 /*
- * Boiler Controller
+ * Heating Controller
  *
  * Button Input 1 - A0
  * Button Input 2 - A1
