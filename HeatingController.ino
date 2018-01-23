@@ -1,5 +1,14 @@
-/**
- * Boiler Controller
+/*
+ * Heating Controller
+ *
+ * Button Input 1 - A0
+ * Button Input 2 - A1
+ * Button Input 3 - A2
+ *
+ * Relay Output 1 - D5 - Boiler 'Call for Heat'
+ * Relay Output 2 - D6 - Radiators Zone Valve
+ * Relay Output 3 - D7 - Underfloor heating pump
+ *
  */
 
 #include <Arduino.h>
