@@ -1,7 +1,7 @@
-Boiler Controller
-=================
+Heating Controller
+==================
 
-
+![Block Diagram](docs/block-diagram.png)
 
 
 Relays
