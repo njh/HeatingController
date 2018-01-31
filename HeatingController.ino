@@ -145,12 +145,8 @@ int8_t pathToNum()
     }
 }
 
-// the loop function runs over and over again forever
-void loop()
+void handleHttp()
 {
-    // Check for an available packet
-    ether.receivePacket();
-
     // GET the index page
     if (http.isGet(F("/"))) {
         http.printHeaders(http.typeHtml);
@@ -187,6 +183,17 @@ void loop()
     // No matches - return 404 Not Found page
     } else {
         http.notFound();
+    }
+}
+
+// the loop function runs over and over again forever
+void loop()
+{
+    // Check for an available packet
+    ether.receivePacket();
+
+    if (http.havePacket()) {
+        handleHttp();
     }
 
     // Reset the watchdog
