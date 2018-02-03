@@ -9,6 +9,12 @@
  * Relay Output 2 - D6 - Radiators Zone Valve
  * Relay Output 3 - D7 - Underfloor heating pump
  *
+ * There is a UDP control interface on port 25910.
+ * It accepts the following two-byte ASCII messages:
+ *  R1 - Turn the radiators On
+ *  R0 - Turn the radiators Off
+ *  U1 - Turn the Underfloor Heating On
+ *  U0 - Turn the Underfloor Heating Off
  */
 
 #include <Arduino.h>
@@ -22,6 +28,9 @@ EtherSia_ENC28J60 ether(10);
 
 /** Define HTTP server */
 HTTPServer http(ether);
+
+/** Define UDP server */
+UDPSocket udp(ether, 25910);
 
 
 #define FIRST_INPUT_PIN   (A0)
@@ -199,6 +208,39 @@ void handleHttp()
 }
 
 
+void handleUdp()
+{
+    char *payload = (char*)udp.payload();
+    bool state;
+
+    if (udp.payloadLength() != 2) {
+        // Invalid payload
+        return;
+    }
+
+    if (payload[1] == '1') {
+        state = HIGH;
+    } else if (payload[1] == '0') {
+        state = LOW;
+    } else {
+        // Invalid Payload
+        return;
+    }
+
+    if (payload[0] == 'R') {
+        // Change Radiator State
+        digitalWrite(RADIATOR_RELAY_PIN, state);
+    } else if (payload[0] == 'U') {
+        // Change Underfloor State
+        digitalWrite(UNDERFLOOR_RELAY_PIN, state);
+    } else {
+        // Invalid Payload
+        return;
+    }
+    
+    setBoilerRelay();
+}
+
 // the loop function runs over and over again forever
 void loop()
 {
@@ -207,6 +249,10 @@ void loop()
 
     if (http.havePacket()) {
         handleHttp();
+    }
+
+    if (udp.havePacket()) {
+        handleUdp();
     }
 
     // Reset the watchdog
