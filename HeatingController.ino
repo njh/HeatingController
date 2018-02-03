@@ -28,11 +28,10 @@ HTTPServer http(ether);
 #define FIRST_OUTPUT_PIN  (5)
 #define CHANNEL_COUNT     (3)
 
+#define BOILER_RELAY_PIN     (5)
+#define RADIATOR_RELAY_PIN   (6)
+#define UNDERFLOOR_RELAY_PIN (7)
 
-const char label1[] PROGMEM = "Boiler";
-const char label2[] PROGMEM = "Radiators";
-const char label3[] PROGMEM = "Underfloor";
-const char* const labels[CHANNEL_COUNT] = {label1, label2, label3};
 
 void setup()
 {
@@ -69,6 +68,15 @@ void digitalToggle(byte pin)
     digitalWrite(pin, !digitalRead(pin));
 }
 
+void setBoilerRelay()
+{
+    // Turn on the boiler if either the Radiator or Underfloor are On
+    digitalWrite(
+        BOILER_RELAY_PIN,
+        digitalRead(RADIATOR_RELAY_PIN) || digitalRead(UNDERFLOOR_RELAY_PIN)
+    );
+}
+
 void checkButtons(void) {
     static byte ignore_count[CHANNEL_COUNT] = {0,0,0};
     static byte trigger_count[CHANNEL_COUNT] = {0,0,0};
@@ -88,6 +96,8 @@ void checkButtons(void) {
                     // If the button is HIGH and if the 200 milliseconds of debounce has been met
                     digitalToggle(FIRST_OUTPUT_PIN + i);
 
+                    setBoilerRelay();
+
                     trigger_count[i] = 0;  // Reset the button counter
                     ignore_count[i] = 8;   // Set a 400 millisecond Ignore counter
                 }
@@ -105,44 +115,61 @@ void checkButtons(void) {
     }
 }
 
+void printOnOffHtml(uint8_t pin)
+{
+    bool state = digitalRead(pin);
+    if (state) {
+        http.print(F("<td class=\"on\">On</td>"));
+    } else {
+        http.print(F("<td class=\"off\">Off</td>"));
+    }
+}
+
 void printIndex()
 {
     http.print(F("<!DOCTYPE html>"));
     http.print(F("<html><head><title>Boiler Controller</title>"));
     http.print(F("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"));
     http.print(F("<link href=\"http://star.aelius.co.uk/boiler.css\" rel=\"stylesheet\" />"));
-    http.print(F("</head><body><h1>Boiler Controller</h1>"));
+    http.print(F("</head><body><h1>Heating Controller</h1>"));
+
     http.print(F("<form method=\"POST\"><table>"));
-    for (uint8_t i=0; i<CHANNEL_COUNT; i++) {
-      char buffer[16];
-      strcpy_P(buffer, labels[i]);
-      http.print(F("<tr><th>"));
-      http.print(buffer);
-      http.print(F(": </th>"));
-      if (digitalRead(FIRST_OUTPUT_PIN + i)) {
-          http.print(F("<td class=\"on\">On</td>"));
-      } else {
-          http.print(F("<td class=\"off\">Off</td>"));
-      }
-      http.print(F("<td><button type=\"submit\" formaction=\"/outputs/"));
-      http.print(i+1, DEC);
-      http.print(F("\">Toggle</button></td></tr>"));
-    }
+
+    http.print(F("<tr><th>Radiators</th>"));
+    printOnOffHtml(RADIATOR_RELAY_PIN);
+    http.print(F("<td><button type=\"submit\" formaction=\"/radiators\">Toggle</button></td></tr>"));
+
+    http.print(F("<tr><th>Underfloor Heating</th>"));
+    printOnOffHtml(UNDERFLOOR_RELAY_PIN);
+    http.print(F("<td><button type=\"submit\" formaction=\"/underfloor\">Toggle</button></td></tr>"));
+
     http.print(F("</table></form></body></html>"));
 }
 
-// Get the output number from the path of the request
-int8_t pathToNum()
+void sendPinStateReply(uint8_t pin)
 {
-    // /outputs/X
-    // 0123456789
-    int8_t num = http.path()[9] - '1';
-    if (0 <= num && num < CHANNEL_COUNT) {
-        return num;
+    bool state = digitalRead(pin);
+    http.printHeaders(http.typePlain);
+    if (state) {
+        http.print(F("on"));
     } else {
-        http.notFound();
-        return -1;
+        http.print(F("off"));
     }
+    http.sendReply();
+}
+
+void handleHttpPost(uint8_t pin)
+{
+    if (http.body() == NULL) {
+        digitalToggle(pin);
+    } else if (http.bodyEquals("on")) {
+        digitalWrite(pin, HIGH);
+    } else if (http.bodyEquals("off")) {
+        digitalWrite(pin, LOW);
+    }
+    http.redirect(F("/"));
+
+    setBoilerRelay();
 }
 
 void handleHttp()
@@ -153,38 +180,24 @@ void handleHttp()
         printIndex();
         http.sendReply();
 
-    // GET the state of a single output
-    } else if (http.isGet(F("/outputs/?"))) {
-        int8_t num = pathToNum();
-        if (num != -1) {
-            http.printHeaders(http.typePlain);
-            if (digitalRead(FIRST_OUTPUT_PIN + num)) {
-                http.println(F("on"));
-            } else {
-                http.println(F("off"));
-            }
-            http.sendReply();
-        }
+    } else if (http.isGet(F("/radiators"))) {
+        sendPinStateReply(RADIATOR_RELAY_PIN);
 
-    // POST the state of a single output
-    } else if (http.isPost(F("/outputs/?"))) {
-        int8_t num = pathToNum();
-        if (num != -1) {
-            if (http.body() == NULL) {
-                digitalToggle(FIRST_OUTPUT_PIN + num);
-            } else if (http.bodyEquals("on")) {
-                digitalWrite(FIRST_OUTPUT_PIN + num, HIGH);
-            } else if (http.bodyEquals("off")) {
-                digitalWrite(FIRST_OUTPUT_PIN + num, LOW);
-            }
-            http.redirect(F("/"));
-        }
+    } else if (http.isGet(F("/underfloor"))) {
+        sendPinStateReply(UNDERFLOOR_RELAY_PIN);
 
-    // No matches - return 404 Not Found page
+    } else if (http.isPost(F("/radiators"))) {
+        handleHttpPost(RADIATOR_RELAY_PIN);
+
+    } else if (http.isPost(F("/underfloor"))) {
+        handleHttpPost(UNDERFLOOR_RELAY_PIN);
+
     } else {
+        // No matches - return 404 Not Found page
         http.notFound();
     }
 }
+
 
 // the loop function runs over and over again forever
 void loop()
