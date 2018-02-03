@@ -35,7 +35,7 @@ HTTPServer http(ether);
 
 void setup()
 {
-    MACAddress macAddress("aa:1c:5d:fe:e7:86");
+    MACAddress macAddress("aa:d3:5a:f7:51:c5");
 
     Serial.begin(115200);
     Serial.println(F("[BoilerController]"));
