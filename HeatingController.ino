@@ -63,13 +63,13 @@ void setup()
 
     // Start Ethernet
     if (ether.begin(macAddress) == false) {
-        Serial.println("Failed to configure Ethernet");
+        Serial.println(F("Failed to configure Ethernet"));
     }
 
     Serial.print(F("Our address is: "));
     ether.globalAddress().println();
 
-    Serial.println("Ready.");
+    Serial.println(F("Ready."));
 }
 
 void digitalToggle(byte pin)
