@@ -47,7 +47,7 @@ void setup()
     MACAddress macAddress("aa:d3:5a:f7:51:c5");
 
     Serial.begin(115200);
-    Serial.println(F("[BoilerController]"));
+    Serial.println(F("[HeatingController]"));
     macAddress.println();
 
     for(byte i=0; i<CHANNEL_COUNT; i++) {
@@ -137,7 +137,7 @@ void printOnOffHtml(uint8_t pin)
 void printIndex()
 {
     http.print(F("<!DOCTYPE html>"));
-    http.print(F("<html><head><title>Boiler Controller</title>"));
+    http.print(F("<html><head><title>Heating Controller</title>"));
     http.print(F("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"));
     http.print(F("<link href=\"http://star.aelius.co.uk/boiler.css\" rel=\"stylesheet\" />"));
     http.print(F("</head><body><h1>Heating Controller</h1>"));
