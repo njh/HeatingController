@@ -15,7 +15,7 @@ Relays
 | Relay | Description          |  Device                    | Voltage | Current       |
 |-------|----------------------|----------------------------|---------|---------------|
 | 1     | Boiler Call for heat | [Vaillant ecoTEC plus 831] | 230v AC | ?             |
-| 2     | Radiator Zone Valve  | [Honeywell V4043]          | 230v AC | 2.2 amps      |
+| 2     | Radiator Zone Valve  | [Honeywell V4043]          | 230v AC | 6W / 0.042A   |
 | 3     | Underfloor Heating   | [Grundfos UPS2]            | 230v AC | 0.06A - 0.42A |
 
 
