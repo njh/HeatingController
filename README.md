@@ -7,9 +7,9 @@ Heating Controller
 Relays
 ------
 
-*Model*: Omron [G2R-1-S-DC12]
-*Coil Rating*: 12V DC / 43.2 mA
-*Contact Rating*: 10A at 250 VAC
+**Model**: Omron [G2R-1-S-DC12]  
+**Coil Rating**: 12V DC / 43.2 mA  
+**Contact Rating**: 10A at 250 VAC  
 
 
 | Relay | Description          |  Device                    | Voltage | Current       |
