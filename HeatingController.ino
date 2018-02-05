@@ -139,7 +139,7 @@ void printIndex()
     http.print(F("<!DOCTYPE html>"));
     http.print(F("<html><head><title>Heating Controller</title>"));
     http.print(F("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"));
-    http.print(F("<link href=\"http://star.aelius.co.uk/boiler.css\" rel=\"stylesheet\" />"));
+    http.print(F("<link href=\"https://star.aelius.co.uk/heating-controller.css\" rel=\"stylesheet\" />"));
     http.print(F("</head><body><h1>Heating Controller</h1>"));
 
     http.print(F("<form method=\"POST\"><table>"));
