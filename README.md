@@ -19,3 +19,7 @@ Relays
 | 3     | Underfloor Heating   | [Grundfos UPS2]            | 230v AC | 0.06A - 0.42A |
 
 
+[Vaillant ecoTEC plus 831]: https://www.vaillant.co.uk/downloads/ecotec-installation-and-servicing-manual-261417.pdf
+[G2R-1-S-DC12]: https://www.ia.omron.com/product/item/5664/
+[Honeywell V4043]: https://www.honeywelluk.com/products/Valves/Motorised-Valves/V4043-Motorised-Valves/
+[Grundfos UPS2]: http://uk.grundfos.com/products/find-product/ups2.html
