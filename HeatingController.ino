@@ -238,10 +238,12 @@ void loop()
 
     if (http.havePacket()) {
         handleHttp();
-    }
-
-    if (udp.havePacket()) {
+    } else if (udp.havePacket()) {
         handleUdp();
+    } else {
+        // Send back a ICMPv6 Destination Unreachable response
+        // to any other connection attempts
+        ether.rejectPacket();
     }
 
     // Reset the watchdog
