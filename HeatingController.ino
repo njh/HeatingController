@@ -22,6 +22,17 @@
 
 #include <EtherSia.h>
 #include <TimerOne.h>
+#include <avdweb_Switch.h>
+
+
+#define BOILER_BUTTON_PIN     (A0)
+#define RADIATOR_BUTTON_PIN   (A1)
+#define UNDERFLOOR_BUTTON_PIN (A2)
+
+#define BOILER_RELAY_PIN      (5)
+#define RADIATOR_RELAY_PIN    (6)
+#define UNDERFLOOR_RELAY_PIN  (7)
+
 
 /** ENC28J60 Ethernet Interface */
 EtherSia_ENC28J60 ether(10);
@@ -33,13 +44,10 @@ HTTPServer http(ether);
 UDPSocket udp(ether, 25910);
 
 
-#define FIRST_INPUT_PIN   (A0)
-#define FIRST_OUTPUT_PIN  (5)
-#define CHANNEL_COUNT     (3)
 
-#define BOILER_RELAY_PIN     (5)
-#define RADIATOR_RELAY_PIN   (6)
-#define UNDERFLOOR_RELAY_PIN (7)
+// Button to VCC, 10k pull-down resistor, no internal pull-up resistor, HIGH polarity
+Switch radiatorButton = Switch(RADIATOR_BUTTON_PIN, INPUT, HIGH);
+Switch underfloorButton = Switch(UNDERFLOOR_BUTTON_PIN, INPUT, HIGH);
 
 
 void setup()
@@ -50,10 +58,10 @@ void setup()
     Serial.println(F("[HeatingController]"));
     macAddress.println();
 
-    for(byte i=0; i<CHANNEL_COUNT; i++) {
-        pinMode(FIRST_OUTPUT_PIN+i, OUTPUT);
-        pinMode(FIRST_INPUT_PIN+i, INPUT);
-    }
+    // Set relay pins to outputs
+    pinMode(BOILER_RELAY_PIN, OUTPUT);
+    pinMode(RADIATOR_RELAY_PIN, OUTPUT);
+    pinMode(UNDERFLOOR_RELAY_PIN, OUTPUT);
 
     Timer1.initialize(50000);   // 50ms
     Timer1.attachInterrupt(checkButtons);
@@ -86,42 +94,20 @@ void setBoilerRelay()
     );
 }
 
-void checkButtons(void) {
-    static byte ignore_count[CHANNEL_COUNT] = {0,0,0};
-    static byte trigger_count[CHANNEL_COUNT] = {0,0,0};
+void checkButtons(void)
+{
+  radiatorButton.poll();  
+  underfloorButton.poll();  
 
-    for(byte i=0; i<CHANNEL_COUNT; i++) {
-        byte state = digitalRead(FIRST_INPUT_PIN + i);
+  if (radiatorButton.pushed()) {
+      digitalToggle(RADIATOR_RELAY_PIN);
+  }
+  
+  if (underfloorButton.pushed()) {
+      digitalToggle(UNDERFLOOR_RELAY_PIN);
+  }
 
-        // Check if we are in an ignore period
-        if (ignore_count[i] == 0) {
-
-            if (state == HIGH) {
-                // Increment the trigger_count every 50 ms while it is less than 3 and the BTN is HIGH
-                if (trigger_count[i] < 3) {
-                    trigger_count[i]++;
-
-                } else {
-                    // If the button is HIGH and if the 200 milliseconds of debounce has been met
-                    digitalToggle(FIRST_OUTPUT_PIN + i);
-
-                    setBoilerRelay();
-
-                    trigger_count[i] = 0;  // Reset the button counter
-                    ignore_count[i] = 8;   // Set a 400 millisecond Ignore counter
-                }
-
-            } else {
-                // Reset counters if the button press was a bounce (state LOW)
-                if (trigger_count[i] > 0)
-                    trigger_count[i] = 0;
-            }
-
-        } else if (state == LOW) {
-            // Count Down the Button Ignore variable once it has been released
-            --ignore_count[i];
-        }
-    }
+  setBoilerRelay();
 }
 
 void printOnOffHtml(uint8_t pin)
