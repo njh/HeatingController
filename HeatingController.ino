@@ -201,6 +201,7 @@ void handleUdp()
 
     if (udp.payloadLength() != 2) {
         // Invalid payload
+        Serial.println(F("Received invalid UDP payload"));
         return;
     }
 
@@ -210,6 +211,7 @@ void handleUdp()
         state = LOW;
     } else {
         // Invalid Payload
+        Serial.println(F("Received invalid UDP device state"));
         return;
     }
 
@@ -221,9 +223,10 @@ void handleUdp()
         digitalWrite(UNDERFLOOR_RELAY_PIN, state);
     } else {
         // Invalid Payload
+        Serial.println(F("Received invalid UDP device id"));
         return;
     }
-    
+
     setBoilerRelay();
 }
 
