@@ -25,6 +25,8 @@
 #include <avdweb_Switch.h>
 
 
+#define UDP_PORT    (25910)
+
 #define BOILER_BUTTON_PIN     (A0)
 #define RADIATOR_BUTTON_PIN   (A1)
 #define UNDERFLOOR_BUTTON_PIN (A2)
@@ -40,9 +42,14 @@ EtherSia_ENC28J60 ether(10);
 /** Define HTTP server */
 HTTPServer http(ether);
 
-/** Define UDP server */
-UDPSocket udp(ether, 25910);
+/** Define UDP socket - for receiving commands */
+UDPSocket udpReciever(ether, UDP_PORT);
 
+/** Define UDP socket - for transmitting status */
+UDPSocket udpSender(ether);
+
+/** Publish current status in next loop */
+bool doPublish = true;
 
 
 // Button to VCC, 10k pull-down resistor, no internal pull-up resistor, HIGH polarity
@@ -77,6 +84,13 @@ void setup()
     Serial.print(F("Our address is: "));
     ether.globalAddress().println();
 
+    if (udpSender.setRemoteAddress("house.aelius.co.uk", UDP_PORT)) {
+        Serial.print(F("UDP status destination: "));
+        udpSender.remoteAddress().println();
+    } else {
+        Serial.println(F("Error: failed to set UDP remote address"));
+    }
+
     Serial.println(F("Ready."));
 }
 
@@ -101,13 +115,40 @@ void checkButtons(void)
 
   if (radiatorButton.pushed()) {
       digitalToggle(RADIATOR_RELAY_PIN);
+      doPublish = true;
   }
   
   if (underfloorButton.pushed()) {
       digitalToggle(UNDERFLOOR_RELAY_PIN);
+      doPublish = true;
   }
 
   setBoilerRelay();
+}
+
+void sendUdp(byte pin, char label)
+{
+    char payload[3];
+
+    payload[0] = label;
+    if (digitalRead(pin)) {
+        payload[1] = '1';
+    } else {
+        payload[1] = '0';
+    }
+    payload[2] = '\0';
+
+    Serial.print(payload);
+    udpSender.send(payload);
+}
+
+void publishStatusUdp()
+{
+    Serial.print(F("Publishing status: "));
+    sendUdp(RADIATOR_RELAY_PIN, 'R');
+    Serial.print(' ');
+    sendUdp(UNDERFLOOR_RELAY_PIN, 'U');
+    Serial.println();
 }
 
 void printOnOffHtml(uint8_t pin)
@@ -164,6 +205,7 @@ void handleHttpPost(uint8_t pin)
     }
     http.redirect(F("/"));
 
+    doPublish = true;
     setBoilerRelay();
 }
 
@@ -194,12 +236,12 @@ void handleHttp()
 }
 
 
-void handleUdp()
+void handleUdpPacket()
 {
-    char *payload = (char*)udp.payload();
+    char *payload = (char*)udpReciever.payload();
     bool state;
 
-    if (udp.payloadLength() != 2) {
+    if (udpReciever.payloadLength() != 2) {
         // Invalid payload
         Serial.println(F("Received invalid UDP payload"));
         return;
@@ -227,6 +269,7 @@ void handleUdp()
         return;
     }
 
+    doPublish = true;
     setBoilerRelay();
 }
 
@@ -238,12 +281,17 @@ void loop()
 
     if (http.havePacket()) {
         handleHttp();
-    } else if (udp.havePacket()) {
-        handleUdp();
+    } else if (udpReciever.havePacket()) {
+        handleUdpPacket();
     } else {
         // Send back a ICMPv6 Destination Unreachable response
         // to any other connection attempts
         ether.rejectPacket();
+    }
+
+    if (doPublish) {
+        publishStatusUdp();
+        doPublish = false;
     }
 
     // Reset the watchdog
