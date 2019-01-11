@@ -35,6 +35,9 @@
 #define RADIATOR_RELAY_PIN    (6)
 #define UNDERFLOOR_RELAY_PIN  (7)
 
+#if ETHERSIA_MAX_PACKET_SIZE < 900
+#error EtherSia packet buffer is less than 900 bytes
+#endif
 
 /** ENC28J60 Ethernet Interface */
 EtherSia_ENC28J60 ether(10);
