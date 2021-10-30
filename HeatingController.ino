@@ -1,10 +1,6 @@
 /*
  * Heating Controller
  *
- * Button Input 1 - A0
- * Button Input 2 - A1
- * Button Input 3 - A2
- *
  * Relay Output 1 - D5 - Boiler 'Call for Heat'
  * Relay Output 2 - D6 - Radiators Zone Valve
  * Relay Output 3 - D7 - Underfloor heating pump
@@ -21,15 +17,9 @@
 //#include <avr/wdt.h>
 
 #include <EtherSia.h>
-#include <TimerOne.h>
-#include <avdweb_Switch.h>
 
 
 #define UDP_PORT    (25910)
-
-#define BOILER_BUTTON_PIN     (A0)
-#define RADIATOR_BUTTON_PIN   (A1)
-#define UNDERFLOOR_BUTTON_PIN (A2)
 
 #define BOILER_RELAY_PIN      (5)
 #define RADIATOR_RELAY_PIN    (6)
@@ -55,11 +45,6 @@ UDPSocket udpSender(ether);
 bool doPublish = true;
 
 
-// Button to VCC, 10k pull-down resistor, no internal pull-up resistor, HIGH polarity
-Switch radiatorButton = Switch(RADIATOR_BUTTON_PIN, INPUT, HIGH);
-Switch underfloorButton = Switch(UNDERFLOOR_BUTTON_PIN, INPUT, HIGH);
-
-
 void setup()
 {
     MACAddress macAddress("aa:d3:5a:f7:51:c5");
@@ -73,8 +58,6 @@ void setup()
     pinMode(RADIATOR_RELAY_PIN, OUTPUT);
     pinMode(UNDERFLOOR_RELAY_PIN, OUTPUT);
 
-    Timer1.initialize(50000);   // 50ms
-    Timer1.attachInterrupt(checkButtons);
 
     // Enable the Watchdog timer
     //wdt_enable(WDTO_8S);
@@ -111,23 +94,6 @@ void setBoilerRelay()
     );
 }
 
-void checkButtons(void)
-{
-  radiatorButton.poll();  
-  underfloorButton.poll();  
-
-  if (radiatorButton.pushed()) {
-      digitalToggle(RADIATOR_RELAY_PIN);
-      doPublish = true;
-  }
-  
-  if (underfloorButton.pushed()) {
-      digitalToggle(UNDERFLOOR_RELAY_PIN);
-      doPublish = true;
-  }
-
-  setBoilerRelay();
-}
 
 void sendUdp(byte pin, char label)
 {
