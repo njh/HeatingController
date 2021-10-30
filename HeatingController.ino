@@ -18,7 +18,7 @@
  */
 
 #include <Arduino.h>
-#include <avr/wdt.h>
+//#include <avr/wdt.h>
 
 #include <EtherSia.h>
 #include <TimerOne.h>
@@ -77,7 +77,7 @@ void setup()
     Timer1.attachInterrupt(checkButtons);
 
     // Enable the Watchdog timer
-    wdt_enable(WDTO_8S);
+    //wdt_enable(WDTO_8S);
 
     // Start Ethernet
     if (ether.begin(macAddress) == false) {
@@ -298,5 +298,5 @@ void loop()
     }
 
     // Reset the watchdog
-    wdt_reset();
+    //wdt_reset();
 }
