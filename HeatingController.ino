@@ -1,9 +1,8 @@
 /*
  * Heating Controller
  *
- * Relay Output 1 - D5 - Boiler 'Call for Heat'
- * Relay Output 2 - D6 - Radiators Zone Valve
- * Relay Output 3 - D7 - Underfloor heating pump
+ * Relay Output 1 - D2 - Radiators Zone Valve
+ * Relay Output 2 - D3 - Underfloor heating pump
  *
  * There is a UDP control interface on port 25910.
  * It accepts the following two-byte ASCII messages:
@@ -21,9 +20,8 @@
 
 #define UDP_PORT    (25910)
 
-#define BOILER_RELAY_PIN      (5)
-#define RADIATOR_RELAY_PIN    (6)
-#define UNDERFLOOR_RELAY_PIN  (7)
+#define RADIATOR_RELAY_PIN    (2)
+#define UNDERFLOOR_RELAY_PIN  (3)
 
 #if ETHERSIA_MAX_PACKET_SIZE < 900
 #error EtherSia packet buffer is less than 900 bytes
@@ -54,7 +52,6 @@ void setup()
     macAddress.println();
 
     // Set relay pins to outputs
-    pinMode(BOILER_RELAY_PIN, OUTPUT);
     pinMode(RADIATOR_RELAY_PIN, OUTPUT);
     pinMode(UNDERFLOOR_RELAY_PIN, OUTPUT);
 
@@ -83,15 +80,6 @@ void setup()
 void digitalToggle(byte pin)
 {
     digitalWrite(pin, !digitalRead(pin));
-}
-
-void setBoilerRelay()
-{
-    // Turn on the boiler if either the Radiator or Underfloor are On
-    digitalWrite(
-        BOILER_RELAY_PIN,
-        digitalRead(RADIATOR_RELAY_PIN) || digitalRead(UNDERFLOOR_RELAY_PIN)
-    );
 }
 
 
@@ -175,7 +163,6 @@ void handleHttpPost(uint8_t pin)
     http.redirect(F("/"));
 
     doPublish = true;
-    setBoilerRelay();
 }
 
 void handleHttp()
@@ -239,7 +226,6 @@ void handleUdpPacket()
     }
 
     doPublish = true;
-    setBoilerRelay();
 }
 
 // the loop function runs over and over again forever
