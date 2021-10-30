@@ -47,14 +47,15 @@ void setup()
 {
     MACAddress macAddress("aa:d3:5a:f7:51:c5");
 
-    Serial.begin(115200);
-    Serial.println(F("[HeatingController]"));
-    macAddress.println();
-
     // Set relay pins to outputs
     pinMode(RADIATOR_RELAY_PIN, OUTPUT);
     pinMode(UNDERFLOOR_RELAY_PIN, OUTPUT);
+    digitalWrite(RADIATOR_RELAY_PIN, LOW);
+    digitalWrite(UNDERFLOOR_RELAY_PIN, LOW);
 
+    Serial.begin(115200);
+    Serial.println(F("[HeatingController]"));
+    macAddress.println();
 
     // Enable the Watchdog timer
     //wdt_enable(WDTO_8S);
