@@ -55,7 +55,7 @@ void setup()
     digitalWrite(RADIATOR_RELAY_PIN, LOW);
     digitalWrite(UNDERFLOOR_RELAY_PIN, LOW);
 
-    Serial.begin(115200);
+    Serial.begin(38400);
     Serial.println(F("[HeatingController]"));
     macAddress.println();
 
