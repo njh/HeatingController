@@ -1,8 +1,9 @@
 /*
  * Heating Controller
  *
- * Relay Output 1 - D2 - Radiators Zone Valve
- * Relay Output 2 - D3 - Underfloor heating pump
+ * Relay Output 1 - D3 - Radiators Zone Valve
+ * Relay Output 2 - D4 - Underfloor heating pump
+ * (note: can't use D2 because it is connected to ENC28J60 INT pin)
  *
  * There is a UDP control interface on port 25910.
  * It accepts the following two-byte ASCII messages:
@@ -20,8 +21,8 @@
 
 #define UDP_PORT    (25910)
 
-#define RADIATOR_RELAY_PIN    (2)
-#define UNDERFLOOR_RELAY_PIN  (3)
+#define RADIATOR_RELAY_PIN    (3)
+#define UNDERFLOOR_RELAY_PIN  (4)
 
 #if ETHERSIA_MAX_PACKET_SIZE < 900
 #error EtherSia packet buffer is less than 900 bytes
