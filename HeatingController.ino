@@ -18,6 +18,7 @@
 
 #include <EtherSia.h>
 
+#include "style_css.h"
 
 #define UDP_PORT    (25910)
 
@@ -125,7 +126,7 @@ void printIndex()
     http.print(F("<!DOCTYPE html>"));
     http.print(F("<html><head><title>Heating Controller</title>"));
     http.print(F("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"));
-    http.print(F("<link href=\"https://star.aelius.co.uk/heating-controller.css\" rel=\"stylesheet\" />"));
+    http.print(F("<link href=\"style.css\" rel=\"stylesheet\" />"));
     http.print(F("</head><body><h1>Heating Controller</h1>"));
 
     http.print(F("<form method=\"POST\"><table>"));
@@ -186,6 +187,11 @@ void handleHttp()
 
     } else if (http.isPost(F("/underfloor"))) {
         handleHttpPost(UNDERFLOOR_RELAY_PIN);
+
+    } else if (http.isGet(F("/style.css"))) {
+        http.printHeaders(http.typeCss);
+        http.print(FPSTR(pm_style_css));
+        http.sendReply();
 
     } else {
         // No matches - return 404 Not Found page

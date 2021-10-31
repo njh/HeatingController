@@ -18,7 +18,6 @@ h1
 
 table, tr {
   width: 100%
-
 }
 
 td, th {
@@ -27,7 +26,6 @@ td, th {
 }
 
 td { text-align: center; }
-
 th { text-align: right; }
 
 .on { background-color: #6F6; }
